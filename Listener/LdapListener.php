@@ -19,6 +19,7 @@ use JMS\DiExtraBundle\Annotation\Service;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Claroline\CoreBundle\Menu\ConfigureMenuEvent;
 
 /**
  * @Service()
@@ -50,6 +51,23 @@ class LdapListener
         $params = array();
         $params['_controller'] = 'ClarolineLdapBundle:Ldap:menu';
         $this->redirect($params, $event);
+    }
+
+    /**
+     * @Observe("claroline_external_authentication_menu_configure")
+     *
+     * @param \Claroline\CoreBundle\Menu\ConfigureMenuEvent $event
+     * @return \Knp\Menu\ItemInterface $menu
+     */
+    public function onTopBarLeftMenuConfigure(ConfigureMenuEvent $event)
+    {
+        $menu = $event->getMenu();
+        $menu->addChild(
+            'LDAP',
+            array('route' => 'claro_admin_ldap')
+        )->setExtra('name', 'LDAP');
+
+        return $menu;
     }
 
     private function redirect($params, $event)
