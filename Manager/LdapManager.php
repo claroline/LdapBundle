@@ -13,7 +13,11 @@ namespace Claroline\LdapBundle\Manager;
 
 use Claroline\CoreBundle\Library\Configuration\PlatformConfigurationHandler;
 
+use JMS\DiExtraBundle\Annotation\Inject;
+use JMS\DiExtraBundle\Annotation\InjectParams;
 use JMS\DiExtraBundle\Annotation\Service;
+use Claroline\CoreBundle\Library\Utilities\FileSystem;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Yaml\Dumper;
 use Symfony\Component\Yaml\Parser;
 
@@ -27,9 +31,15 @@ class LdapManager
     private $config;
     private $connect;
 
-    public function __construct()
+    /**
+     * @InjectParams({
+     *     "container" = @Inject("service_container")
+     * })
+     */
+    public function __construct(ContainerInterface $container)
     {
-        $this->path = __DIR__ . '/../../../../../../app/config/Authentication/claroline.ldap.yml';
+        $this->container = $container;
+        $this->path = $container->getParameter('claroline.param.authentication_directory') . 'ldap';
         $this->yml = new Parser();
         $this->dumper = new Dumper();
         $this->config = $this->parseYml();
@@ -324,8 +334,10 @@ class LdapManager
      */
     private function parseYml()
     {
+        $fs = new FileSystem();
+
         if (!file_exists($this->path)) {
-            touch($this->path);
+            $fs->mkdir($this->path);
         }
 
         return $this->yml->parse(file_get_contents($this->path));
