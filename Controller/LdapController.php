@@ -316,6 +316,12 @@ class LdapController extends Controller
 
             $this->ldap->close();
         }
+        
+        array_walk_recursive($entries, function(&$item, $key) {
+            if(!mb_detect_encoding($item, 'utf-8', true)) {
+                $item = utf8_encode($item);
+            }
+        });
 
         return new Response(json_encode($entries));
     }
